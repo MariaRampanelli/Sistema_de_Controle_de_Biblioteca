@@ -2,36 +2,17 @@
 #ifndef BIBLIOTECA_H
 #define BIBLIOTECA_H
 
+//Menus
 void menuCadastro();
 void menuConsulta();
 void menuAtualizacao();
 void menuExclusao();
 
-void cadastrarLivro();
-void cadastrarUsuario();
+//Livros
+NoLivro* inserirArvoreLivros(NoLivro *raiz, livro novoLivro);
+NoLivro* buscarLivro(NoLivro *raiz, int id);
+void consultarLivroPorId(NoLivro *raiz);
 
-void consultarLivroPorCodigo();
-void consultarLivroPorAutor();
-void consultarUsuarioPorEmail();
-void consultarUsuarioPorNome();
-void consultarEmprestimosUsuario();
 
-void atualizarLivro();
-void atualizarUsuario();
 
-void excluirLivro();
-void excluirUsuario();
-
-void emprestarLivro();
-void devolverLivro();
-
-void criarListaLivros();
-void criarListaUsuarios();
-void inserirLivro();
-void inserirUsuario();
-void buscarLivro();
-void buscarUsuario();
-void removerLivro();
-void removerUsuario();
-void liberarMemoria();
 #endif
