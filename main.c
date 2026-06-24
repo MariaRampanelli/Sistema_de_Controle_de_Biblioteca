@@ -1,4 +1,4 @@
-#include "bibioteca.h"
+#include "biblioteca.h"
 #include <stdio.h>
 
 
@@ -51,7 +51,7 @@ int main() {
                 break;
 
             case 0:
-                liberarMemoria();
+                //liberarLivros(*raizLivros);
                 printf("Encerrando...\n");
                 break;
 
