@@ -8,6 +8,7 @@ int proximoCodigoLivro = 1;
 
 // MENUS ------------------------------------------------
 
+//Menu de cadastro
 void menuCadastro() {
     int opcao;
 
@@ -45,7 +46,7 @@ void menuCadastro() {
             }
 
             case 2:
-               // cadastrarUsuario();
+               cadastrarUsuario();
                 break;
 
             case 0:
@@ -76,11 +77,11 @@ void menuConsulta() {
                 break;
 
             case 2:
-              //  consultarUsuarioPorEmail();
+                consultarUsuarioPorEmail();
                 break;
 
             case 3:
-              //  consultarEmprestimosUsuario();
+                consultarEmprestimosUsuario();
                 break;
 
             case 0:
@@ -110,7 +111,7 @@ void menuAtualizacao() {
                 break;
 
             case 2:
-                // atualizarUsuario();
+                atualizarUsuario();
                 break;
 
             case 0:
@@ -140,7 +141,7 @@ void menuExclusao() {
                 break;
 
             case 2:
-              //  excluirUsuario();
+                excluirUsuario();
                 break;
 
             case 0:
@@ -502,6 +503,12 @@ void emprestarLivro() {
     printf("Informe o email do usuario: ");
     scanf(" %[^\n]", email);
 
+    if(buscarUsuarioEmail(email) == NULL){
+
+    printf("Usuario nao encontrado!\n");
+    return;
+    }
+
     livroEncontrado->dados.status = 1;
     strcpy(livroEncontrado->dados.emprestadoPara, email);
 
@@ -543,4 +550,200 @@ void liberarLivros(NoLivro *raiz) {
     liberarLivros(raiz->esq);
     liberarLivros(raiz->dir);
     free(raiz);
+}
+
+NoUsuario *listaUsuarios = NULL;
+
+NoUsuario* buscarUsuarioEmail(char email[]) {
+
+    NoUsuario *aux = listaUsuarios;
+
+    while(aux != NULL){
+
+        if(strcmp(aux->dados.email, email) == 0){
+            return aux;
+        }
+
+        aux = aux->prox;
+    }
+
+    return NULL;
+}
+
+void cadastrarUsuario(){
+
+    usuario novo;
+
+    printf("\nCadastro de Usuario\n");
+
+    printf("Email: ");
+    scanf(" %[^\n]", novo.email);
+
+    if(buscarUsuarioEmail(novo.email) != NULL){
+        printf("Email ja cadastrado!\n");
+        return;
+    }
+
+    printf("Nome: ");
+    scanf(" %[^\n]", novo.nome);
+
+    NoUsuario *novoNo = (NoUsuario*) malloc(sizeof(NoUsuario));
+
+    novoNo->dados = novo;
+    novoNo->prox = listaUsuarios;
+    listaUsuarios = novoNo;
+
+    printf("Usuario cadastrado com sucesso!\n");
+}
+
+void consultarUsuarioPorEmail(){
+
+    char email[100];
+
+    printf("Informe o email: ");
+    scanf(" %[^\n]", email);
+
+    NoUsuario *usuario = buscarUsuarioEmail(email);
+
+    if(usuario == NULL){
+        printf("Usuario nao cadastrado!\n");
+        return;
+    }
+
+    printf("\nNome: %s\n", usuario->dados.nome);
+    printf("Email: %s\n", usuario->dados.email);
+}
+
+void consultarUsuarioPorNome(){
+
+    char nome[100];
+    int encontrou = 0;
+
+    printf("Informe o nome: ");
+    scanf(" %[^\n]", nome);
+
+    NoUsuario *aux = listaUsuarios;
+
+    while(aux != NULL){
+
+        if(strcmp(aux->dados.nome, nome) == 0){
+
+            printf("\nNome: %s\n", aux->dados.nome);
+            printf("Email: %s\n", aux->dados.email);
+
+            encontrou = 1;
+        }
+
+        aux = aux->prox;
+    }
+
+    if(!encontrou){
+        printf("Usuario nao cadastrado!\n");
+    }
+}
+
+void atualizarUsuario(){
+
+    char email[100];
+
+    printf("Informe o email: ");
+    scanf(" %[^\n]", email);
+
+    NoUsuario *usuario = buscarUsuarioEmail(email);
+
+    if(usuario == NULL){
+
+        printf("Usuario nao encontrado!\n");
+        return;
+    }
+
+    printf("Novo nome: ");
+    scanf(" %[^\n]", usuario->dados.nome);
+
+    printf("Usuario atualizado com sucesso!\n");
+
+}
+
+void excluirUsuario(){
+
+    char email[100];
+
+    printf("Informe o email: ");
+    scanf(" %[^\n]", email);
+
+    NoUsuario *atual = listaUsuarios;
+    NoUsuario *anterior = NULL;
+
+    while(atual != NULL){
+
+        if(strcmp(atual->dados.email, email) == 0){
+
+            if(anterior == NULL){
+                listaUsuarios = atual->prox;
+            }else{
+                anterior->prox = atual->prox;
+            }
+
+            free(atual);
+
+            printf("Usuario excluido com sucesso!\n");
+            return;
+        }
+
+        anterior = atual;
+        atual = atual->prox;
+    }
+
+    printf("Usuario nao encontrado!\n");
+}
+
+void consultarEmprestimosUsuario(){
+
+    char email[100];
+    int encontrou = 0;
+
+    printf("Informe o email: ");
+    scanf(" %[^\n]", email);
+
+    if(buscarUsuarioEmail(email) == NULL){
+
+        printf("Usuario nao cadastrado!\n");
+        return;
+    }
+
+    consultarEmprestimosArvore(raizLivros, email, &encontrou);
+
+    if(!encontrou){
+        printf("Esse usuario nao possui livros emprestados.\n");
+    }
+}
+
+void consultarEmprestimosArvore(NoLivro *raiz, char email[], int *encontrou){
+
+    if(raiz == NULL)
+        return;
+
+    consultarEmprestimosArvore(raiz->esq, email, encontrou);
+
+    if(strcmp(raiz->dados.emprestadoPara, email) == 0){
+
+        exibirLivro(raiz->dados);
+        *encontrou = 1;
+    }
+
+    consultarEmprestimosArvore(raiz->dir, email, encontrou);
+}
+
+void liberarUsuarios(){
+
+    NoUsuario *aux = listaUsuarios;
+
+    while(aux != NULL){
+
+        NoUsuario *temp = aux;
+
+        aux = aux->prox;
+
+        free(temp);
+    }
 }

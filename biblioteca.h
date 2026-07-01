@@ -7,6 +7,13 @@ typedef struct Usuario {
     char nome[100];
 } usuario;
 
+typedef struct NoUsuario{
+    usuario dados;
+    struct NoUsuario *prox;
+} NoUsuario;
+
+extern NoUsuario *listaUsuarios;
+
 typedef struct Livro {
     char titulo[100];
     char autor[100];
@@ -31,11 +38,15 @@ void menuAtualizacao();
 void menuExclusao();
 
 //usuários
-/* void cadastrarUsuario();
+NoUsuario* buscarUsuarioEmail(char email[]);
+void cadastrarUsuario();
 void consultarUsuarioPorEmail();
+void consultarUsuarioPorNome();
 void consultarEmprestimosUsuario();
+void consultarEmprestimosArvore(NoLivro *raiz, char email[], int *encontrou);
 void atualizarUsuario();
-void excluirUsuario(); */
+void excluirUsuario();
+void liberarUsuarios();
 
 //Livros
 int altura(NoLivro *n);
