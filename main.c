@@ -51,7 +51,7 @@ int main() {
                 break;
 
             case 0:
-                //liberarLivros(*raizLivros);
+                liberarMemoria();
                 printf("Encerrando...\n");
                 break;
 

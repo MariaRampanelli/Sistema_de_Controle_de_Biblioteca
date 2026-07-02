@@ -32,8 +32,16 @@ void menuCadastro() {
                 printf("Digite o autor do livro: ");
                 scanf(" %[^\n]", novoLivro.autor);
 
+                do {
+
                 printf("Digite o ano de publicacao do livro: ");
                 scanf("%d", &novoLivro.anoPublicacao);
+
+                if(novoLivro.anoPublicacao < 1450 || novoLivro.anoPublicacao > 2026){
+                  printf("Ano de publicacao invalido! Informe um ano entre 1450 e 2026.\n");
+                }
+
+                } while(novoLivro.anoPublicacao < 1450 || novoLivro.anoPublicacao > 2026);
 
                 novoLivro.codigo = proximoCodigoLivro++;
                 novoLivro.status = 0;
@@ -72,13 +80,43 @@ void menuConsulta() {
         scanf("%d", &opcao);
 
         switch(opcao) {
+
             case 1:
                 menuConsultaLivros();
                 break;
 
-            case 2:
-                consultarUsuarioPorEmail();
+            case 2: {
+                int opcaoUsuario;
+
+                do {
+                    printf("\n===== CONSULTA DE USUARIOS =====\n");
+                    printf("1. Por email\n");
+                    printf("2. Por nome\n");
+                    printf("0. Voltar\n");
+                    printf("Opcao: ");
+                    scanf("%d", &opcaoUsuario);
+
+                    switch(opcaoUsuario) {
+
+                        case 1:
+                            consultarUsuarioPorEmail();
+                            break;
+
+                        case 2:
+                            consultarUsuarioPorNome();
+                            break;
+
+                        case 0:
+                            break;
+
+                        default:
+                            printf("Opcao invalida!\n");
+                    }
+
+                } while(opcaoUsuario != 0);
+
                 break;
+            }
 
             case 3:
                 consultarEmprestimosUsuario();
@@ -377,10 +415,21 @@ void atualizarLivro() {
             scanf(" %[^\n]", livroEncontrado->dados.autor);
             break;
 
-        case 3:
+        case 3: {
+            int ano;
+
             printf("Novo ano: ");
-            scanf("%d", &livroEncontrado->dados.anoPublicacao);
+            scanf("%d", &ano);
+
+            if(ano < 1450 || ano > 2026){
+
+                printf("Ano de publicacao invalido!\n");
+                return;
+            }
+
+            livroEncontrado->dados.anoPublicacao = ano;
             break;
+        }
 
         default:
             printf("Opcao invalida!\n");
@@ -503,6 +552,11 @@ void emprestarLivro() {
     printf("Informe o email do usuario: ");
     scanf(" %[^\n]", email);
 
+    if(!validarEmail(email)){
+    printf("Email invalido!\n");
+    return;
+    }
+
     if(buscarUsuarioEmail(email) == NULL){
 
     printf("Usuario nao encontrado!\n");
@@ -576,8 +630,16 @@ void cadastrarUsuario(){
 
     printf("\nCadastro de Usuario\n");
 
+    do {
+
     printf("Email: ");
     scanf(" %[^\n]", novo.email);
+
+    if(!validarEmail(novo.email)){
+        printf("Email invalido! Tente novamente.\n");
+    }
+
+    } while(!validarEmail(novo.email));
 
     if(buscarUsuarioEmail(novo.email) != NULL){
         printf("Email ja cadastrado!\n");
@@ -589,9 +651,33 @@ void cadastrarUsuario(){
 
     NoUsuario *novoNo = (NoUsuario*) malloc(sizeof(NoUsuario));
 
+    if(novoNo == NULL){
+        printf("Erro ao alocar memoria!\n");
+        return;
+    }
+
     novoNo->dados = novo;
-    novoNo->prox = listaUsuarios;
-    listaUsuarios = novoNo;
+    novoNo->prox = NULL;
+
+    /* Lista vazia ou deve inserir no início */
+    if(listaUsuarios == NULL ||
+      strcmp(novo.email, listaUsuarios->dados.email) < 0){
+
+      novoNo->prox = listaUsuarios;
+      listaUsuarios = novoNo;
+    }
+    else{
+    NoUsuario *atual = listaUsuarios;
+
+    while(atual->prox != NULL &&
+          strcmp(atual->prox->dados.email, novo.email) < 0){
+
+        atual = atual->prox;
+    }
+
+    novoNo->prox = atual->prox;
+    atual->prox = novoNo;
+    }
 
     printf("Usuario cadastrado com sucesso!\n");
 }
@@ -610,7 +696,8 @@ void consultarUsuarioPorEmail(){
         return;
     }
 
-    printf("\nNome: %s\n", usuario->dados.nome);
+    printf("\n===== DADOS DO USUARIO =====\n");
+    printf("Nome : %s\n", usuario->dados.nome);
     printf("Email: %s\n", usuario->dados.email);
 }
 
@@ -628,7 +715,8 @@ void consultarUsuarioPorNome(){
 
         if(strcmp(aux->dados.nome, nome) == 0){
 
-            printf("\nNome: %s\n", aux->dados.nome);
+            printf("\n===== DADOS DO USUARIO =====\n");
+            printf("Nome : %s\n", aux->dados.nome);
             printf("Email: %s\n", aux->dados.email);
 
             encontrou = 1;
@@ -670,6 +758,13 @@ void excluirUsuario(){
 
     printf("Informe o email: ");
     scanf(" %[^\n]", email);
+
+    // Verifica se o usuário possui livros emprestados
+    if(usuarioPossuiEmprestimo(raizLivros, email)){
+
+        printf("Nao e possivel excluir o usuario. Existem livros emprestados em seu nome.\n");
+        return;
+    }
 
     NoUsuario *atual = listaUsuarios;
     NoUsuario *anterior = NULL;
@@ -734,6 +829,13 @@ void consultarEmprestimosArvore(NoLivro *raiz, char email[], int *encontrou){
     consultarEmprestimosArvore(raiz->dir, email, encontrou);
 }
 
+void liberarMemoria(){
+
+    liberarLivros(raizLivros);
+    liberarUsuarios();
+
+}
+
 void liberarUsuarios(){
 
     NoUsuario *aux = listaUsuarios;
@@ -746,4 +848,38 @@ void liberarUsuarios(){
 
         free(temp);
     }
+}
+
+int validarEmail(char email[]) {
+
+    int temArroba = 0;
+    int temPonto = 0;
+
+    for(int i = 0; email[i] != '\0'; i++) {
+
+        if(email[i] == '@')
+            temArroba = 1;
+
+        if(email[i] == '.')
+            temPonto = 1;
+    }
+
+    return temArroba && temPonto;
+}
+
+int usuarioPossuiEmprestimo(NoLivro *raiz, char email[]) {
+
+    if(raiz == NULL)
+        return 0;
+
+    if(strcmp(raiz->dados.emprestadoPara, email) == 0)
+        return 1;
+
+    if(usuarioPossuiEmprestimo(raiz->esq, email))
+        return 1;
+
+    if(usuarioPossuiEmprestimo(raiz->dir, email))
+        return 1;
+
+    return 0;
 }

@@ -12,8 +12,6 @@ typedef struct NoUsuario{
     struct NoUsuario *prox;
 } NoUsuario;
 
-extern NoUsuario *listaUsuarios;
-
 typedef struct Livro {
     char titulo[100];
     char autor[100];
@@ -30,6 +28,8 @@ typedef struct NoLivro {
     int altura;
 } NoLivro;
 
+extern NoLivro *raizLivros;
+extern NoUsuario *listaUsuarios;
 
 //Menus
 void menuCadastro();
@@ -47,6 +47,8 @@ void consultarEmprestimosArvore(NoLivro *raiz, char email[], int *encontrou);
 void atualizarUsuario();
 void excluirUsuario();
 void liberarUsuarios();
+int validarEmail(char email[]);
+int usuarioPossuiEmprestimo(NoLivro *raiz, char email[]);
 
 //Livros
 int altura(NoLivro *n);
@@ -66,5 +68,6 @@ NoLivro* menorValor(NoLivro *raiz);
 void emprestarLivro();
 void devolverLivro();
 void liberarLivros(NoLivro *raiz);
+void liberarMemoria();
 
 #endif
